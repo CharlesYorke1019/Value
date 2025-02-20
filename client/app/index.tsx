@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import User from '@/models/User'
 import socket from '@/components/socket'
-
+import { Provider } from 'react-redux';
+import { store, setUserInfoSuccessfulLogIn } from '@/models/store'
 
 export default function StartPage() {
 
-  const [user, setUser] = useState(new User(null, null, socket));
+  const [user, setUser] = useState<any>(new User(null, null, socket));
   const [startScreenPosition, setStartScreenPosition] = useState(0);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -31,33 +32,47 @@ export default function StartPage() {
     setStartScreenPosition(0);
   })
 
-  user.socket.on('logInSuccessful', (userData: any) => {
-    
+  user.socket.on('logInSuccessful', (userData: any) => {  
+
+    store.dispatch(setUserInfoSuccessfulLogIn(userData));
+
+    router.push({
+      pathname: '/home'
+    });
   })
 
+  function userLogsIn() {
+    socket.emit('logIn', {email: username, password: password})
+  }
+
+  function userRegisters() {
+    socket.emit('register', {email: username, password: password, confirmPassword: confirmPassword})
+  }
+
   return (
-    <SafeAreaView style={{width: '100%', height: '100%'}}
+    <Provider store={store}>
+    <SafeAreaView style={{width: '100%', height: '100%', backgroundColor: 'black', zIndex: -5}}
     >
       <KeyboardAvoidingView 
-        style={{position: 'absolute', height: '100%', width: '100%', top: '0%', left: '0%'}}
+        style={{position: 'absolute', height: '100%', width: '100%', top: '0%', left: '0%', backgroundColor: 'black', zIndex: -5}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-      <View style={{flex: 1}}
+      <View style={{flex: 1, backgroundColor: 'black'}}
       >
-        <Text style={{color: 'white', fontSize: 28, alignSelf: 'center'}}>
+        <Text style={{color: 'white', fontSize: 56, alignSelf: 'center', fontFamily: 'Baskerville-Bold', marginTop: '20%'}}>
           Value
         </Text>
 
-        <TouchableOpacity style={{borderWidth: 1, borderColor: 'white', position: 'absolute', top: '30%', left: '22.5%', opacity: startScreenPosition === 0 ? 1 : 0.5}}
+        <TouchableOpacity style={{borderWidth: 1, borderColor: 'white', position: 'absolute', top: '30%', left: '22.5%', width: '25%', opacity: startScreenPosition === 0 ? 1 : 0.5}}
           onPress={() => changePosition(0)}
         >
-          <Text style={{color: 'white', paddingTop: 7, paddingBottom: 7, paddingLeft: 17, paddingRight: 17}}>Log In</Text>
+          <Text style={{color: 'white', fontFamily: 'Baskerville', fontSize: 18, textAlign: 'center', paddingTop: 7, paddingBottom: 7}}>Log In</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={{borderWidth: 1, borderColor: 'white', position: 'absolute', top: '30%', left: '52.5%', opacity: startScreenPosition === 1 ? 1 : 0.5}}
+        <TouchableOpacity style={{borderWidth: 1, borderColor: 'white', position: 'absolute', top: '30%', left: '52.5%', width: '25%', opacity: startScreenPosition === 1 ? 1 : 0.5}}
           onPress={() => changePosition(1)}
         >
-          <Text style={{color: 'white', paddingTop: 7, paddingBottom: 7, paddingLeft: 17, paddingRight: 17}}>Register</Text>
+          <Text style={{color: 'white', fontFamily: 'Baskerville', fontSize: 18, textAlign: 'center', paddingTop: 7, paddingBottom: 7}}>Register</Text>
         </TouchableOpacity>
 
 
@@ -67,7 +82,7 @@ export default function StartPage() {
             value={suUsernameHolder}
             onChangeText={(input) => setUsername(input)}
             onPressOut={() => Keyboard.dismiss()}
-            style={{width: 200, height: 40, borderWidth: 1, marginBottom: '5%', backgroundColor: 'white', alignSelf: 'center', textAlign: 'center'}}
+            style={{width: 200, height: 40, borderWidth: 1, marginBottom: '5%', backgroundColor: 'white', alignSelf: 'center', textAlign: 'center', fontFamily: 'Baskerville'}}
             placeholder='Email'
             placeholderTextColor={'grey'}
           />
@@ -76,15 +91,16 @@ export default function StartPage() {
             value={suPasswordHolder}
             onChangeText={(input) => setPassword(input)}
             onPressOut={() => Keyboard.dismiss()}
-            style={{width: 200, height: 40, borderWidth: 1, backgroundColor: 'white', alignSelf: 'center', textAlign: 'center'}}
+            style={{width: 200, height: 40, borderWidth: 1, backgroundColor: 'white', alignSelf: 'center', textAlign: 'center', fontFamily: 'Baskerville'}}
             placeholder='Password'
             placeholderTextColor={'grey'}
+            secureTextEntry={true}
           />
 
           <TouchableOpacity style={{borderWidth: 1, borderColor: 'white', position: 'absolute', alignSelf: 'center', top: 150}}
-            onPress={() => user.logIn({email: username, password: password})}
+            onPress={() => userLogsIn()}
           >
-            <Text style={{color: 'white', paddingTop: 7, paddingBottom: 7, paddingLeft: 17, paddingRight: 17}}>Log In</Text>
+            <Text style={{color: 'white', paddingTop: 7, paddingBottom: 7, paddingLeft: 17, paddingRight: 17, fontFamily: 'Baskerville'}}>Log In</Text>
           </TouchableOpacity>
 
         </View>
@@ -94,7 +110,7 @@ export default function StartPage() {
           <TextInput 
             value={rUsernameHolder}
             onChangeText={(input) => setUsername(input)}
-            style={{width: 200, height: 40, borderWidth: 1, marginBottom: '5%', backgroundColor: 'white', alignSelf: 'center', textAlign: 'center'}}
+            style={{width: 200, height: 40, borderWidth: 1, marginBottom: '5%', backgroundColor: 'white', alignSelf: 'center', textAlign: 'center', fontFamily: 'Baskerville'}}
             placeholder='Email'
             placeholderTextColor={'grey'}
           />
@@ -102,31 +118,31 @@ export default function StartPage() {
           <TextInput 
             value={rPasswordHolder}
             onChangeText={(input) => setPassword(input)}
-            style={{width: 200, height: 40, borderWidth: 1, marginBottom: '5%', backgroundColor: 'white', alignSelf: 'center', textAlign: 'center'}}
+            style={{width: 200, height: 40, borderWidth: 1, marginBottom: '5%', backgroundColor: 'white', alignSelf: 'center', textAlign: 'center', fontFamily: 'Baskerville'}}
             placeholder='Password'
             placeholderTextColor={'grey'}
+            secureTextEntry={true}
           />
 
           <TextInput 
             value={rConfirmPasswordHolder}
             onChangeText={(input) => setConfirmPassword(input)}
-            style={{width: 200, height: 40, borderWidth: 1, backgroundColor: 'white', alignSelf: 'center', textAlign: 'center'}}
+            style={{width: 200, height: 40, borderWidth: 1, backgroundColor: 'white', alignSelf: 'center', textAlign: 'center', fontFamily: 'Baskerville'}}
             placeholder='Confirm Password'
             placeholderTextColor={'grey'}
+            secureTextEntry={true}
           />
 
           <TouchableOpacity style={{borderWidth: 1, borderColor: 'white', position: 'absolute', alignSelf: 'center', top: 190}}
-            onPress={() => user.register({email: username, password: password, confirmPassword: confirmPassword})}
+            onPress={() => userRegisters()}
           >
-            <Text style={{color: 'white', paddingTop: 7, paddingBottom: 7, paddingLeft: 17, paddingRight: 17}}>Register</Text>
+            <Text style={{color: 'white', paddingTop: 7, paddingBottom: 7, paddingLeft: 17, paddingRight: 17, fontFamily: 'Baskerville'}}>Register</Text>
           </TouchableOpacity>
 
         </View>
-
-
-
       </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </Provider>
   );
 }

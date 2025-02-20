@@ -4,6 +4,7 @@ class User {
     password;
     socket;
     loggedIn;
+    token;
 
     constructor(email, password, socket) {
         this.email = email;
@@ -21,9 +22,14 @@ class User {
     }
 
     setUserOnLogIn(userInfo) {
-        this.email = userInfo.email;
-        this.password = userInfo.password;
+        this.email = userInfo.user.email;
+        this.password = userInfo.user.password;
         this.loggedIn = true;
+        this.token = userInfo.token;
+    }
+
+    sendPing() {
+        this.socket.emit('sent_ping')
     }
 
 

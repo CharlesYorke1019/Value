@@ -40,6 +40,16 @@ app.post('/users', controller.createUser);
 
 app.get('/users', controller.getUsers);
 
+app.get(`/feed`, controller.feed);
+
+app.patch(`/odds/:id`, controller.updateForTesting);
+
+app.get(`/odds`, controller.getOdds);
+
+app.get(`/alerts`, controller.getAlerts);
+
+app.post(`/alerts`, controller.createAlert);
+
 io.on('connection', (socket) => {
 
     console.log('connect');
@@ -49,13 +59,26 @@ io.on('connection', (socket) => {
     })
 
     socket.on('logIn', async (userInfo) => {
-        console.log(socket.handshake.headers);
         controller.logIn(socket, userInfo)
     })
 
-})
+    socket.on('joinRoomEmit', async () => {
+        controller.handleUserJoiningRoom(socket);
+    })
 
-db.sequelize.sync();
+    socket.on('leaveRoomEmit', async () => {
+        controller.handleUserLeavingRoom(socket);
+    })
+
+});
+
+// setInterval(async () => {
+//     controller.test(io);
+// }, 20000);
+
+db.sequelize.sync({
+    force: true
+});
 
 app.listen(PORT, () => {
     console.log(`Lets win some money fellas`)
